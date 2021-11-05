@@ -9,9 +9,9 @@ import java.util.ArrayList;
 public class BoardController {
 
     private final int MIN_STARTING_ROW_LENGTH = 2;
-    private final int MAX_STARTING_ROW_LENGTH = 60; // 60
+    private final int MAX_STARTING_ROW_LENGTH = 60;
     private int pascalinacciCount;
-    private static int startingRowLength = 60; //53
+    private static int startingRowLength = 60;
     public static final int NOT_A_COLOR = -1;
     private static ArrayList<Integer> colorIndices;
     private ObservableList<Integer> obsColorIndices;
