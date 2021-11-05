@@ -1,0 +1,23 @@
+.root{
+    -fx-font-family: Arial;
+    -fx-font-size: 20;
+    -fx-font-weight: bold;
+}
+
+.button {
+
+}
+.slider .thumb {
+    /* Hexagon shape */
+    -fx-shape: "M0.0, 86.6  L50.0,0.0    L150, 0.0    L200, 86.6    L150, 173.2     L50, 173.2Z" ;
+   /* -fx-shape: "M-100, 0    L-50, -86    L50, -86     L100, 0       L50, 86         L-50, 86Z"; */
+    -fx-border-color: black;
+    -fx-border-width: 3px;
+}
+.slider .thumb:hover {
+    -fx-background-color: blue;
+}
+
+.slider .thumb:dragged {
+    -fx-background-color: blue;
+}
