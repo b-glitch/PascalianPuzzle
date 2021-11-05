@@ -1,19 +1,17 @@
 package puzzle.pascalian.pascalianpuzzle;
 
-
 import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class BoardView implements ListChangeListener {
 
-    private double currentScale = 0.5; // 0.5 for 60
+    private double currentScale;
     private static int startingRowLength;
     private GridPane board;
     private static BoardController boardController;
@@ -24,15 +22,21 @@ public class BoardView implements ListChangeListener {
     private static int animationSleepMillis;
     private final static int MAX_ANIMATION_SLEEP_MILLIS = 1000;
 
+    /**
+     * Constructor.
+     * @param controller the BoardController to display the view of.
+     */
     public BoardView(BoardController controller){
 
-        updating = new AtomicBoolean(false);
-        boardController = controller;
-        startingRowLength = boardController.getStartingRowLength();
         board = new GridPane();
         hexagons = new ArrayList<>();
-        rows = 0;
+        updating = new AtomicBoolean(false);
+        boardController = controller;
         boardController.watchList(this);
+
+        // Getting initial board size and scale
+        startingRowLength = boardController.getStartingRowLength();
+        setScaleFromSize(startingRowLength);
 
         setupBoard();
 
@@ -64,7 +68,7 @@ public class BoardView implements ListChangeListener {
      * Sets up the board. Initializes the board, adds the starting
      * row and any remaining rows to complete the triangle.
      */
-    public void setupBoard(){
+    protected void setupBoard(){
         // Setting update flag
         updating.compareAndSet(false, true);
 
@@ -82,7 +86,7 @@ public class BoardView implements ListChangeListener {
      * board resulting from this method will have a set color
      * pattern after setup.
      */
-    public void setupSpecialBoard(){
+    protected void setupSpecialBoard(){
         // Setting update flag
         updating.compareAndSet(false, true);
         initBoard();
@@ -93,8 +97,6 @@ public class BoardView implements ListChangeListener {
         // Clearing update flag
         updating.compareAndSet(true, false);
     }
-
-
 
     /**
      * Creates a starting row of hexagons with a simple color pattern.
@@ -142,7 +144,6 @@ public class BoardView implements ListChangeListener {
         startingRow.setAlignment(Pos.CENTER);
         startingRow.setPadding(new Insets(0,0,-5 * currentScale,0)); // T R B L (bottom = -5 * SCALE to remove padding for next row down)
 
-
         for(int i = 0; i < startingRowLength; i++) {
             // Getting random color
             int colorIndex = random.nextInt(3);
@@ -188,7 +189,6 @@ public class BoardView implements ListChangeListener {
             hexagon.setRow(rows);
 
             // Getting color based on parents
-            //int colorIndex = hexagon.getNextColorIndex(colorIndices.get(leftParent), colorIndices.get(rightParent));
             int colorIndex = hexagon.getNextColorIndex(leftColorIndex, rightColorIndex);
             hexagon.setColor(colorIndex);
 
@@ -209,15 +209,15 @@ public class BoardView implements ListChangeListener {
      * color of each hexagon.
      * @param currentRow the row to set the correct colors on.
      */
-    public static void setRowColors(int currentRow){
+    protected static void setRowColors(int currentRow){
         if(currentRow == 0){ // Updating the first row doesn't require looking at parents
             for(int index = 0; index < startingRowLength; index++){
                 int colorIndex = hexagons.get(index).getColorIndex();
                 boardController.setColorIndex(index, colorIndex);
             }
         }else { // All other rows, need to check parents for colors
-            int leftParentIndex = 0;
-            int hexagonIndex = 0;
+            int leftParentIndex;
+            int hexagonIndex;
             int rowStartIndex = boardController.getRowIndex(currentRow);
             for (int i = 0; i < startingRowLength - currentRow; i++) { // getting the leftmost parent
 
@@ -248,18 +248,24 @@ public class BoardView implements ListChangeListener {
     /**
      * @return the GridPane object representing the board.
      */
-    public GridPane getBoard(){
+    protected GridPane getBoard(){
         return board;
     }
 
-    public void clearBoard(){
+    /**
+     * Clears the board.
+     */
+    protected void clearBoard(){
         for (Hexagon hexagon : hexagons) {
             hexagon.setColor(-1);
         }
         boardController.clearBoard();
     }
 
-    public static void setUpdating(){
+    /**
+     * Sets the updating flag to true.
+     */
+    protected static void setUpdating(){
         updating.compareAndSet(false, true);
     }
 
@@ -267,8 +273,8 @@ public class BoardView implements ListChangeListener {
      * Updates the colors of the hexagons on the board.
      * Can be called statically.
      */
-    public synchronized static void updateBoard(){
-        if(!updating.get()){ return; }
+    protected synchronized static void updateBoard(){
+        if(!updating.get()){ return; } // if updating flag is not set, then return
 
         // Animation Thread allows for animation flow control separate from user input (main thread)
         animationThread = new Thread(()->{
@@ -317,11 +323,12 @@ public class BoardView implements ListChangeListener {
      * Updates animation speed based on a slider value from 0 to 1.
      * @param sliderValue slider value to update speed to.
      */
-    public static void updateAnimationSpeed(double sliderValue){
+    protected void updateAnimationSpeed(double sliderValue){
         animationSleepMillis = (int) (MAX_ANIMATION_SLEEP_MILLIS * sliderValue);
     }
 
-    public void changeBoardSize(int newSize){
+    protected void changeBoardSize(int newSize){
+        boardController.setStartingRowLength(newSize);
         startingRowLength = newSize;
         setScaleFromSize(newSize);
         setupBoard();
@@ -339,5 +346,26 @@ public class BoardView implements ListChangeListener {
         double logpart = Math.log10(Math.E);
         double denomenator = (size + 0.5) * logpart;
         currentScale = 12 / denomenator;
+    }
+
+    /**
+     * @return the starting row length value.
+     */
+    protected int getStartingRowLength(){
+        return boardController.getStartingRowLength();
+    }
+
+    /**
+     * @return the minimum starting row length value.
+     */
+    protected int getMinStartingRowLength(){
+        return boardController.getMinStartingRowLength();
+    }
+
+    /**
+     * @return the maximum starting row length value.
+     */
+    protected int getMaxStartingRowLength(){
+        return boardController.getMaxStartingRowLength();
     }
 }

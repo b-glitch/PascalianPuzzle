@@ -10,19 +10,18 @@ public class BoardController {
 
     private final int MIN_STARTING_ROW_LENGTH = 2;
     private final int MAX_STARTING_ROW_LENGTH = 60;
+    private final int INITIAL_STARTING_ROW_LENGTH = 28;
     private int pascalinacciCount;
-    private static int startingRowLength = 60;
+    private int startingRowLength;
     public static final int NOT_A_COLOR = -1;
     private static ArrayList<Integer> colorIndices;
     private ObservableList<Integer> obsColorIndices;
 
     public BoardController(){
-
         colorIndices = new ArrayList<>();
         obsColorIndices = FXCollections.observableArrayList(colorIndices);
-
+        startingRowLength = INITIAL_STARTING_ROW_LENGTH;
         setPascalinacciCount();
-        System.out.println(pascalinacciCount);
     }
 
     /**
@@ -49,7 +48,7 @@ public class BoardController {
      * @param indexToFind the index to find the row of.
      * @return the row that the give index is in.
      */
-    protected static int getRowIndex(int indexToFind){
+    protected int getRowIndex(int indexToFind){
         int index = 0;
         for(int row = 1; row < indexToFind; row++){
             index += startingRowLength - row + 1;
@@ -97,12 +96,10 @@ public class BoardController {
     }
 
     protected void setStartingRowLength(int length){
-        if(length <= MIN_STARTING_ROW_LENGTH) {
+        if(length <= MIN_STARTING_ROW_LENGTH) { // minimum if length is less than minimum
             startingRowLength = MIN_STARTING_ROW_LENGTH;
-        }else if(length >= MAX_STARTING_ROW_LENGTH){
-            startingRowLength = MAX_STARTING_ROW_LENGTH;
-        }else {
-            startingRowLength = length;
+        }else { // length up to the maximum
+            startingRowLength = Math.min(length, MAX_STARTING_ROW_LENGTH);
         }
     }
 
@@ -110,7 +107,7 @@ public class BoardController {
         obsColorIndices.addListener(listener);
     }
 
-    protected int getPascalinacciNumber(int n){
+    protected static int getPascalinacciNumber(int n){
         if(n == 0) {
             return 2;
         }
